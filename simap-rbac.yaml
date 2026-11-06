@@ -1,0 +1,63 @@
+# Permisos mínimos de SIMAP-Web en CADA proyecto de WordPress que vaya a monitorear.
+# Se aplica por proyecto:   oc apply -n <proyecto> -f simap-rbac.yaml
+# La ServiceAccount `simap-web` vive en el proyecto `simap-web` (hay que crearlo antes). NO se usa cluster-admin.
+#
+# Qué usa el código y por qué (ver SOLICITUD-ADMIN-OPENSHIFT.md):
+#   - get deployments            leer la imagen y las réplicas del portal
+#   - get/list pods              encontrar el pod listo y comprobar el reinicio
+#   - get/create pods/exec       correr comandos fijos y de una lista cerrada dentro del pod (wp, php, df, stat)
+#   - patch deployments          SOLO para cambiar la imagen (actualizar núcleo/PHP) y para "Volver atrás"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: simap-monitor
+rules:
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["pods/exec"]
+    # exec por WebSocket entra como GET y luego POST: se piden las dos para no depender de la versión del clúster
+    verbs: ["get", "create"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: simap-monitor
+subjects:
+  - kind: ServiceAccount
+    name: simap-web
+    namespace: simap-web
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: simap-monitor
+---
+# OPCIONAL: solo si se quiere que SIMAP-Web cambie la imagen del portal (actualizar núcleo/PHP y "Volver atrás").
+# Sin este bloque el monitoreo y la actualización de plugins funcionan igual; núcleo/PHP quedaría solo de lectura.
+# Para limitarlo aún más, agregar `resourceNames: ["<nombre-del-deployment>"]` a la regla.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: simap-cambiar-imagen
+rules:
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: simap-cambiar-imagen
+subjects:
+  - kind: ServiceAccount
+    name: simap-web
+    namespace: simap-web
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: simap-cambiar-imagen

@@ -1,0 +1,42 @@
+{
+  "name": "simap-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "node --env-file=.env node_modules/vitest/vitest.mjs run",
+    "dev": "tsx watch --env-file=.env src/main.ts",
+    "typecheck": "tsc --noEmit",
+    "migrate": "tsx --env-file=.env src/migrate.ts",
+    "create-user": "tsx --env-file=.env src/create-user.ts",
+    "revisar": "tsx --env-file=.env src/revisar.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "@fastify/cookie": "^11.1.5",
+    "@fastify/helmet": "^13.2.0",
+    "@kubernetes/client-node": "^2.0.2",
+    "argon2": "^0.45.2",
+    "fastify": "^5.12.8",
+    "pg": "^8.23.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "@types/pg": "^8.23.1",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
+  },
+  "allowScripts": {
+    "argon2@0.45.2": true,
+    "esbuild@0.28.2": true
+  }
+}

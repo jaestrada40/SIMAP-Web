@@ -1,0 +1,14 @@
+# Solo para desarrollo local. En OpenShift el Postgres va con su propio manifiesto.
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: simap
+      POSTGRES_PASSWORD: ${PG_PASSWORD:?define PG_PASSWORD en .env}
+      POSTGRES_DB: simap
+    ports:
+      - "127.0.0.1:5442:5432" # solo local; 5442 para no chocar con otro Postgres
+    volumes:
+      - simap-pgdata:/var/lib/postgresql/data
+volumes:
+  simap-pgdata:
